@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <title>Animating Symbols</title>
+        <style>
+            html, body, #map-canvas {
+                height: 100%;
+                margin: 0px;
+                padding: 0px
+            }
+        </style>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+        <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script>
+            // This example adds an animated symbol to a polyline.
+
+            var line;
+
+
+
+
+            function initialize() {
+                
+                var shipData;
+                var shipsCoord =[];
+                //var shipCoordTimestamp = [];
+                
+                $.ajax({
+                    url: 'data100k(After Processing).json',
+                    dataType: 'json',
+                    type: 'get',
+                    cache: true,
+                    success: function (data) {
+                        $(data).each(function (index, value) {
+                            shipData = value;
+                            console.log(shipData.length);
+                            
+                            for (j = 0; j < shipData.length ; j++) {
+                                var lineCoordinates = [];
+                                //var timestampArr = [];
+                                var ship = shipData[j];
+                                for (i = 0; i < ship.Locations.length; i++) {
+                                    var coord = new google.maps.LatLng(ship.Locations[i].Latitude, ship.Locations[i].Longitude);
+                                    //var timestamp = ship.Locations[i].Timestamp;
+                                    lineCoordinates.push(coord);
+                                    //timestampArr.push(timestamp);
+                                }
+                                // Create the polyline and add the symbol to it via the 'icons' property.
+                                    shipsCoord.push(lineCoordinates);
+                                    //shipCoordTimestamp.push(timestampArr);
+                                    line = new google.maps.Polyline({
+                                    path: shipsCoord[j],
+                                    strokeOpacity: 0.3,
+                                    strokeWeight: 2,
+                                    /*icons: [{
+                                            icon: lineSymbol,
+                                            offset: '100%'
+                                        }
+                                    ],*/
+                                    map: map
+                                });
+                            }
+                        });
+                    }
+                });
+
+                var mapOptions = {
+                    center: new google.maps.LatLng(0, 0),
+                    zoom: 2
+                };
+
+                var map = new google.maps.Map(document.getElementById('map-canvas'),
+                        mapOptions);
+
+
+
+
+
+                // Define the symbol, using one of the predefined paths ('CIRCLE')
+                // supplied by the Google Maps JavaScript API.
+                var lineSymbol = {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 3,
+                    strokeOpacity: 1.0,
+                    strokeColor: '#393'
+                };
+
+                /* var lineSymbol2 = {
+                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+                 };
+                 */
+
+
+
+                animateCircle();
+            }
+
+            // Use the DOM setInterval() function to change the offset of the symbol
+            // at fixed intervals.
+            function animateCircle() {
+                var count = 0;
+                window.setInterval(function () {
+                    count = (count + 1) % 200;
+
+                    var icons = line.get('icons');
+                    icons[0].offset = (count / 2) + '%';
+                    line.set('icons', icons);
+                }, 20);
+            }
+
+            google.maps.event.addDomListener(window, 'load', initialize);
+
+        </script>
+    </head>
+    <body>
+        <div id="map-canvas"></div>
+    </body>
+</html>
